@@ -18,20 +18,17 @@ pub struct ColumnFloat {
     data: Vec<DataFloat>,
 }
 
-
 #[derive(Debug)]
 pub struct ColumnText {
     name: String,
     data: Vec<DataText>,
 }
 
-
 #[derive(Debug)]
 pub struct ColumnBool {
     name: String,
     data: Vec<DataBool>,
 }
-
 
 #[derive(Debug)]
 pub struct DataFrame {
@@ -45,25 +42,25 @@ impl Index<&str> for DataFrame {
         for col in &self.columns {
             match col {
                 DataColumn::IntegerDataColumn(c) => {
-                     if c.name == name {
-                        return &col
+                    if c.name == name {
+                        return &col;
                     }
-                },
+                }
                 DataColumn::TextDataColumn(c) => {
-                     if c.name == name {
-                        return &col
+                    if c.name == name {
+                        return &col;
                     }
-                },
+                }
                 DataColumn::FloatDataColumn(c) => {
-                     if c.name == name {
-                        return &col
+                    if c.name == name {
+                        return &col;
                     }
-                },
+                }
                 DataColumn::BoolDataColumn(c) => {
-                     if c.name == name {
-                        return &col
+                    if c.name == name {
+                        return &col;
                     }
-                },
+                }
             }
         }
         panic!("unknown column name")
@@ -132,13 +129,11 @@ impl DataFrame {
         let mut cols = Vec::<DataColumn>::new();
         for (i, v) in column_types.iter().enumerate() {
             match v {
-                DataTypes::Integer => {
-                    cols.push(DataColumn::IntegerDataColumn(ColumnInteger{
-                        name: column_names[i].to_string(),
-                        data: vec![],
-                    }))
-                }
-                DataTypes::Text => cols.push(DataColumn::TextDataColumn(ColumnText{
+                DataTypes::Integer => cols.push(DataColumn::IntegerDataColumn(ColumnInteger {
+                    name: column_names[i].to_string(),
+                    data: vec![],
+                })),
+                DataTypes::Text => cols.push(DataColumn::TextDataColumn(ColumnText {
                     name: column_names[i].to_string(),
                     data: vec![],
                 })),
@@ -291,7 +286,7 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_col() -> Result<(),Box<dyn Error>> {
+    fn test_simple_col() -> Result<(), Box<dyn Error>> {
         let dataframe = DataFrame::new(
             vec!["width", "height", "name", "in_stock", "count"],
             vec![
@@ -302,7 +297,7 @@ mod tests {
         if let DataColumn::FloatDataColumn(widths) = &dataframe["width"] {
             assert_eq!(widths.data.len(), 2);
         } else {
-            assert!(false,"wrong type")
+            assert!(false, "wrong type")
         }
         Ok(())
     }
