@@ -5,8 +5,8 @@ dataframes for rust
 let dataframe = DataFrame::new(
     columns!["width","height","name"],
     data![
-            1,2,"hey",
-            4,5,"boo"
+            .4,.7,"book",
+            3,4,"poster"
         ]
 )?;
 ```

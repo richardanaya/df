@@ -1,7 +1,9 @@
 use std::error::Error;
 
 type DataInteger = i32;
+type DataFloat = f32;
 type DataText = String;
+type DataBool = bool;
 
 #[derive(Debug)]
 struct Column<T> {
@@ -18,6 +20,8 @@ pub struct DataFrame {
 enum DataColumn {
     IntegerDataColumn(Column<DataInteger>),
     TextDataColumn(Column<DataText>),
+    FloatDataColumn(Column<DataFloat>),
+    BoolDataColumn(Column<DataBool>),
 }
 
 #[derive(Debug)]
@@ -84,6 +88,14 @@ impl DataFrame {
                     name: column_names[i].clone(),
                     data: vec![],
                 })),
+                DataTypes::Float => cols.push(DataColumn::FloatDataColumn(Column::<DataFloat> {
+                    name: column_names[i].clone(),
+                    data: vec![],
+                })),
+                DataTypes::Bool => cols.push(DataColumn::BoolDataColumn(Column::<DataBool> {
+                    name: column_names[i].clone(),
+                    data: vec![],
+                })),
             }
         }
 
@@ -107,6 +119,22 @@ impl DataFrame {
                         ))
                     }
                 },
+                DataColumn::FloatDataColumn(col) => match &cell {
+                    DataCell::FloatDataCell(val) => col.data.push(val.clone()),
+                    _ => {
+                        return Err(DataFrameError::create(
+                            "data cell type did not match float column type",
+                        ))
+                    }
+                },
+                DataColumn::BoolDataColumn(col) => match &cell {
+                    DataCell::BoolDataCell(val) => col.data.push(val.clone()),
+                    _ => {
+                        return Err(DataFrameError::create(
+                            "data cell type did not match bool column type",
+                        ))
+                    }
+                },
             }
         }
 
@@ -118,12 +146,16 @@ impl DataFrame {
 enum DataTypes {
     Integer,
     Text,
+    Float,
+    Bool,
 }
 
 #[derive(Debug)]
 pub enum DataCell {
     IntegerDataCell(DataInteger),
     TextDataCell(DataText),
+    FloatDataCell(DataFloat),
+    BoolDataCell(DataBool),
 }
 
 impl DataCell {
@@ -131,6 +163,8 @@ impl DataCell {
         match self {
             DataCell::IntegerDataCell(_) => DataTypes::Integer,
             DataCell::TextDataCell(_) => DataTypes::Text,
+            DataCell::FloatDataCell(_) => DataTypes::Float,
+            DataCell::BoolDataCell(_) => DataTypes::Bool,
         }
     }
 }
@@ -144,6 +178,18 @@ impl From<DataInteger> for DataCell {
 impl From<DataText> for DataCell {
     fn from(v: DataText) -> Self {
         DataCell::TextDataCell(v)
+    }
+}
+
+impl From<DataFloat> for DataCell {
+    fn from(v: DataFloat) -> Self {
+        DataCell::FloatDataCell(v)
+    }
+}
+
+impl From<DataBool> for DataCell {
+    fn from(v: DataBool) -> Self {
+        DataCell::BoolDataCell(v)
     }
 }
 
@@ -177,4 +223,22 @@ macro_rules! columns {
             temp_vec
         }
     };
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_simple() {
+        let dataframe = DataFrame::new(
+            columns!["width", "height", "name", "instock", "count"],
+            data![
+                0.4, 0.7, "book", true, 1, 
+                3.0, 4.7, "poster", true, 1
+                ],
+        );
+        assert_eq!(dataframe.is_ok(), true);
+    }
 }
