@@ -3,10 +3,10 @@ dataframes for rust
 
 ```rust
 let dataframe = DataFrame::new(
-    columns!["width","height","name"],
+    columns!["width", "height", "name", "in_stock", "count"],
     data![
-            .4,.7,"book",
-            3,4,"poster"
-        ]
-)?;
+            0.4, 0.7, "book", true, 1, 
+            3.0, 4.7, "poster", true, 1
+        ],
+);
 ```

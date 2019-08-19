@@ -233,7 +233,7 @@ mod tests {
     #[test]
     fn test_simple() {
         let dataframe = DataFrame::new(
-            columns!["width", "height", "name", "instock", "count"],
+            columns!["width", "height", "name", "in_stock", "count"],
             data![
                 0.4, 0.7, "book", true, 1, 
                 3.0, 4.7, "poster", true, 1
