@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::ops::Index;
 
 type DataInteger = i32;
 type DataFloat = f32;
@@ -6,22 +7,75 @@ type DataText = String;
 type DataBool = bool;
 
 #[derive(Debug)]
-struct Column<T> {
+pub struct ColumnInteger {
     name: String,
-    data: Vec<T>,
+    data: Vec<DataInteger>,
 }
+
+#[derive(Debug)]
+pub struct ColumnFloat {
+    name: String,
+    data: Vec<DataFloat>,
+}
+
+
+#[derive(Debug)]
+pub struct ColumnText {
+    name: String,
+    data: Vec<DataText>,
+}
+
+
+#[derive(Debug)]
+pub struct ColumnBool {
+    name: String,
+    data: Vec<DataBool>,
+}
+
 
 #[derive(Debug)]
 pub struct DataFrame {
     columns: Vec<DataColumn>,
 }
 
+impl Index<&str> for DataFrame {
+    type Output = DataColumn;
+
+    fn index(&self, name: &str) -> &Self::Output {
+        for col in &self.columns {
+            match col {
+                DataColumn::IntegerDataColumn(c) => {
+                     if c.name == name {
+                        return &col
+                    }
+                },
+                DataColumn::TextDataColumn(c) => {
+                     if c.name == name {
+                        return &col
+                    }
+                },
+                DataColumn::FloatDataColumn(c) => {
+                     if c.name == name {
+                        return &col
+                    }
+                },
+                DataColumn::BoolDataColumn(c) => {
+                     if c.name == name {
+                        return &col
+                    }
+                },
+            }
+        }
+        panic!("unknown column name")
+    }
+}
+
 #[derive(Debug)]
-enum DataColumn {
-    IntegerDataColumn(Column<DataInteger>),
-    TextDataColumn(Column<DataText>),
-    FloatDataColumn(Column<DataFloat>),
-    BoolDataColumn(Column<DataBool>),
+pub enum DataColumn {
+    IntegerDataColumn(ColumnInteger),
+    TextDataColumn(ColumnText),
+    FloatDataColumn(ColumnFloat),
+    BoolDataColumn(ColumnBool),
 }
 
 #[derive(Debug)]
@@ -79,20 +133,20 @@ impl DataFrame {
         for (i, v) in column_types.iter().enumerate() {
             match v {
                 DataTypes::Integer => {
-                    cols.push(DataColumn::IntegerDataColumn(Column::<DataInteger> {
+                    cols.push(DataColumn::IntegerDataColumn(ColumnInteger{
                         name: column_names[i].to_string(),
                         data: vec![],
                     }))
                 }
-                DataTypes::Text => cols.push(DataColumn::TextDataColumn(Column::<DataText> {
+                DataTypes::Text => cols.push(DataColumn::TextDataColumn(ColumnText{
                     name: column_names[i].to_string(),
                     data: vec![],
                 })),
-                DataTypes::Float => cols.push(DataColumn::FloatDataColumn(Column::<DataFloat> {
+                DataTypes::Float => cols.push(DataColumn::FloatDataColumn(ColumnFloat {
                     name: column_names[i].to_string(),
                     data: vec![],
                 })),
-                DataTypes::Bool => cols.push(DataColumn::BoolDataColumn(Column::<DataBool> {
+                DataTypes::Bool => cols.push(DataColumn::BoolDataColumn(ColumnBool {
                     name: column_names[i].to_string(),
                     data: vec![],
                 })),
@@ -234,5 +288,22 @@ mod tests {
             ],
         );
         assert_eq!(dataframe.is_ok(), true);
+    }
+
+    #[test]
+    fn test_simple_col() -> Result<(),Box<dyn Error>> {
+        let dataframe = DataFrame::new(
+            vec!["width", "height", "name", "in_stock", "count"],
+            vec![
+                row![0.4, 0.7, "book", true, 1],
+                row![3.0, 4.7, "poster", true, 1],
+            ],
+        )?;
+        if let DataColumn::FloatDataColumn(widths) = &dataframe["width"] {
+            assert_eq!(widths.data.len(), 2);
+        } else {
+            assert!(false,"wrong type")
+        }
+        Ok(())
     }
 }
