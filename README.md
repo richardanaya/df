@@ -4,10 +4,10 @@ An ergonomic DataFrames library for Rust inspired by data science libraries like
 ```rust
 let dataframe = DataFrame::new(
     vec!["width", "height", "name", "in_stock", "count"],
-    data![
-            0.4, 0.7, "book", true, 1, 
-            3.0, 4.7, "poster", true, 1
-        ],
+    vec![
+        row![0.4, 0.7, "book", true, 1],
+        row![3.0, 4.7, "poster", true, 1]
+    ]
 );
 ```
 

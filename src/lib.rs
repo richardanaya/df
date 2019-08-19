@@ -53,25 +53,25 @@ impl Error for DataFrameError {
 impl DataFrame {
     pub fn new(
         column_names: Vec<&str>,
-        data: Vec<DataCell>,
+        data: Vec<Vec<DataCell>>,
     ) -> Result<DataFrame, Box<dyn Error>> {
         let num_cols = column_names.len();
         let mut column_types = vec![];
 
         // Figure out the column types from the data
-        for i in 0..num_cols {
-            if i >= data.len() {
-                // Default to integer
-                column_types.push(DataTypes::Integer);
-            } else {
-                column_types.push(data[i].data_type());
+        if data.len() > 0 {
+            for i in 0..num_cols {
+                if i >= data[0].len() {
+                    // Default to integer
+                    column_types.push(DataTypes::Integer);
+                } else {
+                    column_types.push(data[0][i].data_type());
+                }
             }
-        }
-
-        if data.len() % num_cols != 0 {
-            return Err(DataFrameError::create(
-                "length of data provided did not match expected number of columns",
-            ));
+        } else {
+            for _ in 0..num_cols {
+                column_types.push(DataTypes::Integer);
+            }
         }
 
         // create columns based on column types
@@ -100,41 +100,48 @@ impl DataFrame {
         }
 
         // Go through each data cell and if they can be added to the appropriate column, do it
-        for (i, cell) in data.iter().enumerate() {
-            let col_index = i % num_cols;
-            match &mut cols[col_index] {
-                DataColumn::IntegerDataColumn(col) => match &cell {
-                    DataCell::IntegerDataCell(val) => col.data.push(val.clone()),
-                    _ => {
-                        return Err(DataFrameError::create(
-                            "data cell type did not match integer column type",
-                        ))
-                    }
-                },
-                DataColumn::TextDataColumn(col) => match &cell {
-                    DataCell::TextDataCell(val) => col.data.push(val.clone()),
-                    _ => {
-                        return Err(DataFrameError::create(
-                            "data cell type did not match text column type",
-                        ))
-                    }
-                },
-                DataColumn::FloatDataColumn(col) => match &cell {
-                    DataCell::FloatDataCell(val) => col.data.push(val.clone()),
-                    _ => {
-                        return Err(DataFrameError::create(
-                            "data cell type did not match float column type",
-                        ))
-                    }
-                },
-                DataColumn::BoolDataColumn(col) => match &cell {
-                    DataCell::BoolDataCell(val) => col.data.push(val.clone()),
-                    _ => {
-                        return Err(DataFrameError::create(
-                            "data cell type did not match bool column type",
-                        ))
-                    }
-                },
+        for row in data.iter() {
+            if row.len() != num_cols {
+                return Err(DataFrameError::create(
+                    "length of data provided did not match expected number of columns",
+                ));
+            }
+
+            for (col_index, cell) in row.iter().enumerate() {
+                match &mut cols[col_index] {
+                    DataColumn::IntegerDataColumn(col) => match &cell {
+                        DataCell::IntegerDataCell(val) => col.data.push(val.clone()),
+                        _ => {
+                            return Err(DataFrameError::create(
+                                "data cell type did not match integer column type",
+                            ))
+                        }
+                    },
+                    DataColumn::TextDataColumn(col) => match &cell {
+                        DataCell::TextDataCell(val) => col.data.push(val.clone()),
+                        _ => {
+                            return Err(DataFrameError::create(
+                                "data cell type did not match text column type",
+                            ))
+                        }
+                    },
+                    DataColumn::FloatDataColumn(col) => match &cell {
+                        DataCell::FloatDataCell(val) => col.data.push(val.clone()),
+                        _ => {
+                            return Err(DataFrameError::create(
+                                "data cell type did not match float column type",
+                            ))
+                        }
+                    },
+                    DataColumn::BoolDataColumn(col) => match &cell {
+                        DataCell::BoolDataCell(val) => col.data.push(val.clone()),
+                        _ => {
+                            return Err(DataFrameError::create(
+                                "data cell type did not match bool column type",
+                            ))
+                        }
+                    },
+                }
             }
         }
 
@@ -200,7 +207,7 @@ impl From<&str> for DataCell {
 }
 
 #[macro_export]
-macro_rules! data {
+macro_rules! row {
     ( $( $x:expr ),* ) => {
         {
             let mut temp_vec = Vec::<DataCell>::new();
@@ -221,10 +228,10 @@ mod tests {
     fn test_simple() {
         let dataframe = DataFrame::new(
             vec!["width", "height", "name", "in_stock", "count"],
-            data![
-                0.4, 0.7, "book", true, 1, 
-                3.0, 4.7, "poster", true, 1
-                ],
+            vec![
+                row![0.4, 0.7, "book", true, 1],
+                row![3.0, 4.7, "poster", true, 1],
+            ],
         );
         assert_eq!(dataframe.is_ok(), true);
     }
