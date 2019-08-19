@@ -52,7 +52,7 @@ impl Error for DataFrameError {
 
 impl DataFrame {
     pub fn new(
-        column_names: Vec<String>,
+        column_names: Vec<&str>,
         data: Vec<DataCell>,
     ) -> Result<DataFrame, Box<dyn Error>> {
         let num_cols = column_names.len();
@@ -80,20 +80,20 @@ impl DataFrame {
             match v {
                 DataTypes::Integer => {
                     cols.push(DataColumn::IntegerDataColumn(Column::<DataInteger> {
-                        name: column_names[i].clone(),
+                        name: column_names[i].to_string(),
                         data: vec![],
                     }))
                 }
                 DataTypes::Text => cols.push(DataColumn::TextDataColumn(Column::<DataText> {
-                    name: column_names[i].clone(),
+                    name: column_names[i].to_string(),
                     data: vec![],
                 })),
                 DataTypes::Float => cols.push(DataColumn::FloatDataColumn(Column::<DataFloat> {
-                    name: column_names[i].clone(),
+                    name: column_names[i].to_string(),
                     data: vec![],
                 })),
                 DataTypes::Bool => cols.push(DataColumn::BoolDataColumn(Column::<DataBool> {
-                    name: column_names[i].clone(),
+                    name: column_names[i].to_string(),
                     data: vec![],
                 })),
             }
@@ -212,19 +212,6 @@ macro_rules! data {
     };
 }
 
-#[macro_export]
-macro_rules! columns {
-    ( $( $x:expr ),* ) => {
-        {
-            let mut temp_vec = Vec::<String>::new();
-            $(
-                temp_vec.push($x.to_owned());
-            )*
-            temp_vec
-        }
-    };
-}
-
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -233,7 +220,7 @@ mod tests {
     #[test]
     fn test_simple() {
         let dataframe = DataFrame::new(
-            columns!["width", "height", "name", "in_stock", "count"],
+            vec!["width", "height", "name", "in_stock", "count"],
             data![
                 0.4, 0.7, "book", true, 1, 
                 3.0, 4.7, "poster", true, 1
